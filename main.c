@@ -5,28 +5,29 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "helper.h"
 
 void greeting();
-void validate_cmd(char*);
+void validate_and_process(char*, int);
 void process(char*);
+//char* strip(char*, int);
 
 int main() {
     greeting();
     while (1) {
         printf("> ");
         char *buffer = NULL;
-        int read_len;
-        unsigned int len;
+        size_t read_len;
+        size_t len;
         read_len = getline(&buffer, &len, stdin);
         if (-1 == read_len) {
             printf("error when reading from stdin\n");
             continue;
         }
 
-        // process read
         //TODO: is there a better way to parse without changing buf?
         buffer[read_len - 1] = '\0';
-        validate_cmd(buffer);
+        validate_and_process(buffer, read_len);
 
         free(buffer);
     }
@@ -38,26 +39,33 @@ void greeting() {
 }
 
 // check if command is valid or not
-void validate_cmd(char* buf) {
-    // remove \n from buf
+void validate_and_process(char* buf, int len) {
+    char* cmd = strip(buf);
+    if (*cmd == '\0') {
+        return;
+    }
     // currently don't support cmd with spaces in them, like ls -l
-    printf("get cmd %s", buf);
-    if (strcmp(buf, "ls") == 0) {
-//        printf("got ls\n");
-        process(buf);
+    if (strcmp(cmd, "ls") == 0) {
+        process(cmd);
     } else {
         printf("unknown cmd\n");
     }
 }
 
+//char* strip(char* buf, int len) {
+//    char* cmd;
+//
+//    return buf;
+//}
+
 void process(char* buf) {
     pid_t pid = fork();
+    // TODO: mask sigint and other related signal....
     if (pid < 0) {
         fprintf(stderr, "error when fork()");
         return;
     } else if (pid == 0) {
         // child will do cmd specified in buf
-        printf("in process....\n");
         execl("./bin/ls", "ls", (char*)0);
     } else {
         // parent will wait until child ends
