@@ -8,7 +8,7 @@
 #include "helper.h"
 
 void greeting();
-void validate_and_process(char*, int);
+void validate_and_process(char*);
 void process(char*);
 //char* strip(char*, int);
 
@@ -27,7 +27,7 @@ int main() {
 
         //TODO: is there a better way to parse without changing buf?
         buffer[read_len - 1] = '\0';
-        validate_and_process(buffer, read_len);
+        validate_and_process(buffer);
 
         free(buffer);
     }
@@ -35,11 +35,18 @@ int main() {
 
 void greeting() {
     // print some greeting words
-    printf("welcome to mc shell!\n");
+    printf("########################\n");
+    printf("#                      #\n");
+    printf("#                      #\n");
+    printf("# welcome to mc shell! #\n");
+    printf("#                      #\n");
+    printf("#                      #\n");
+    printf("########################\n");
+    printf("\n\n");
 }
 
 // check if command is valid or not
-void validate_and_process(char* buf, int len) {
+void validate_and_process(char* buf) {
     char* cmd = strip(buf);
     if (*cmd == '\0') {
         return;
@@ -51,12 +58,6 @@ void validate_and_process(char* buf, int len) {
         printf("unknown cmd\n");
     }
 }
-
-//char* strip(char* buf, int len) {
-//    char* cmd;
-//
-//    return buf;
-//}
 
 void process(char* buf) {
     pid_t pid = fork();

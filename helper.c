@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h> 
 
 char* strip(char* buf) {
     int len = strlen(buf);
@@ -23,6 +24,13 @@ char* strip(char* buf) {
         }
     }
     return result;
+}
+
+bool startsWith(const char* pre, const char* str) {
+    size_t len_pre = strlen(pre), len_str = strlen(str);
+    if (len_pre > len_str)
+        return false;
+    return strncmp(pre, str, len_pre) == 0;
 }
 
 //int main() {
