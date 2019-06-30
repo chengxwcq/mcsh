@@ -15,17 +15,17 @@ int main() {
     while (1) {
         printf("> ");
         char *buffer = NULL;
-        int read;
+        int read_len;
         unsigned int len;
-        read = getline(&buffer, &len, stdin);
-        if (-1 == read) {
+        read_len = getline(&buffer, &len, stdin);
+        if (-1 == read_len) {
             printf("error when reading from stdin\n");
             continue;
         }
 
         // process read
         //TODO: is there a better way to parse without changing buf?
-        buffer[len - 2] = '\0';
+        buffer[read_len - 1] = '\0';
         validate_cmd(buffer);
 
         free(buffer);
@@ -41,8 +41,9 @@ void greeting() {
 void validate_cmd(char* buf) {
     // remove \n from buf
     // currently don't support cmd with spaces in them, like ls -l
+    printf("get cmd %s", buf);
     if (strcmp(buf, "ls") == 0) {
-        printf("got ls\n");
+//        printf("got ls\n");
         process(buf);
     } else {
         printf("unknown cmd\n");
@@ -57,8 +58,9 @@ void process(char* buf) {
     } else if (pid == 0) {
         // child will do cmd specified in buf
         printf("in process....\n");
+        execl("./bin/ls", "ls", (char*)0);
     } else {
-        // parent will wait until child comes back
+        // parent will wait until child ends
         waitpid(pid, NULL, 0);
     }
 }
