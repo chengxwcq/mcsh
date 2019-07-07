@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "helper.h"
+#include "util/helper.h"
 
 void greeting();
 void validate_and_process(char*);

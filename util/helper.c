@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
 #include <stdbool.h> 
 
 char* strip(char* buf) {
@@ -33,8 +34,22 @@ bool startsWith(const char* pre, const char* str) {
     return strncmp(pre, str, len_pre) == 0;
 }
 
+int stringComparator(const void *p, const void *q) {
+    char* pchar = *(char **)p;
+    char* qchar = *(char **)q;
+    return strcmp(pchar, qchar);
+}
+
+void sortString(void* base, size_t num) {
+    qsort(base, num, sizeof(char *), stringComparator);
+}
+
 //int main() {
-//    char buf[] = "  ba a \n";
-//    printf("[%s]\n", buf);
-//    printf("[%s]\n", strip(buf));
+//    char* input[] = {"aa", "orange", "blue", "a"};
+//    sortString(input, 4);
+//    int i;
+//    for (i = 0; i < 4; i++) {
+//        printf("%s\n", input[i]);
+//    }
 //}
+
