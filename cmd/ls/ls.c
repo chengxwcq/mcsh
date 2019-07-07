@@ -9,12 +9,14 @@
 struct FileInfo {
     char* name;
     mode_t st_mode;
+    nlink_t st_nlink;
 };
 
-void print_reg(char* name, mode_t mode);
-void print_dir(char* name, mode_t mode);
-void print_symbolic(char* name, mode_t mode);
-void print_other(char* name, mode_t mode);
+void print_reg(struct FileInfo);
+void print_dir(struct FileInfo);
+void print_symbolic(struct FileInfo);
+void print_other(struct FileInfo);
+void print_info(struct FileInfo info, char* format);
 char* mode_format(mode_t mode);
 int fileInfoComparator(const void *p, const void *q); 
 
@@ -63,6 +65,7 @@ int main(int argc, char* argv[]) {
         struct FileInfo tmp;
         tmp.name = dir->d_name;
         tmp.st_mode = buf.st_mode;
+        tmp.st_nlink = buf.st_nlink;
         file_info[info_index] = tmp;
         info_index++;
     }
@@ -76,13 +79,13 @@ int main(int argc, char* argv[]) {
         if (detailed) {
             // check if file is regular, dir or symbolic link
             if (S_ISREG(info.st_mode)) {
-                print_reg(info.name, info.st_mode);
+                print_reg(info);
             } else if (S_ISDIR(info.st_mode)) {
-                print_dir(info.name, info.st_mode);
+                print_dir(info);
             } else if (S_ISLNK(info.st_mode)) {
-                print_symbolic(info.name, info.st_mode);
+                print_symbolic(info);
             } else {
-                print_other(info.name, info.st_mode);
+                print_other(info);
             }
         } else {
             printf("%s\t", info.name);
@@ -94,20 +97,28 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-void print_reg(char* name, mode_t mode) {
-    printf("-%s\t%s\n", mode_format(mode), name);
+void print_info(struct FileInfo info, char* format) {
+    char *name = info.name;
+    mode_t mode = info.st_mode;
+    nlink_t st_nlink = info.st_nlink;
+    printf(format, mode_format(mode), st_nlink, name);
 }
 
-void print_dir(char* name, mode_t mode) {
-    printf("d%s\t\033[1;34m%s\033[0m\n", mode_format(mode), name);
+
+void print_reg(struct FileInfo info) {
+    print_info(info, "-%s\t%d\t%s\n");
 }
 
-void print_symbolic(char* name, mode_t mode) {
-    printf("-%s\t\033[1;32m%s\033[0m\n", mode_format(mode), name);
+void print_dir(struct FileInfo info) {
+    print_info(info, "d%s\t%d\t\033[1;34m%s\033[0m\n");
 }
 
-void print_other(char* name, mode_t mode) {
-    printf("-%s\t%s\n", mode_format(mode), name);
+void print_symbolic(struct FileInfo info) {
+    print_info(info, "-%s\t%d\t\033[1;32m%s\033[0m\n");
+}
+
+void print_other(struct FileInfo info) {
+    print_info(info, "-%s\t%d\t%s\n");
 }
 
 char* mode_format(mode_t mode) {
