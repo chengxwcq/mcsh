@@ -1,14 +1,12 @@
 //
 // Created by Cheng Ma on 2019-06-30.
-//
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <string.h> 
 #include <unistd.h>
 #include "util/helper.h"
 
 void greeting();
-void validate_and_process(char*);
 void process(char**);
 char** parse_cmd(char* buf);
 //char* strip(char*, int);
@@ -25,11 +23,14 @@ int main() {
             printf("error when reading from stdin\n");
             continue;
         }
-
+        // meaning \n
+        if (1 == read_len) {
+            continue;
+        }
         //TODO: is there a better way to parse without changing buf?
         buffer[read_len - 1] = '\0';
-        validate_and_process(buffer);
-
+        char** cmd = parse_cmd(buffer);
+        process(cmd);
         free(buffer);
     }
 }
@@ -44,26 +45,6 @@ void greeting() {
     printf("#                      #\n");
     printf("########################\n");
     printf("\n\n");
-}
-
-// check if command is valid or not
-void validate_and_process(char* buf) {
-    char** cmd = parse_cmd(buf);
-
-    int i;
-    for (i = 0; cmd[i] != NULL; i++) {
-        printf("%s\n", cmd[i]);
-    }
-
-    // currently don't support cmd with spaces in them, like ls -l
-    if (strcmp(cmd[0], "ls") == 0) {
-    printf("===\n");
-    fflush(stdout);
- 
-        process(cmd);
-    } else {
-        printf("unknown cmd\n");
-    }
 }
 
 char** parse_cmd(char* buf) {
@@ -116,7 +97,9 @@ void process(char** buf) {
         return;
     } else if (pid == 0) {
         // child will do cmd specified in buf
-        execl("./bin/ls", "ls", (char*)0);
+        if (strcmp("ls", buf[0]) == 0) {
+            execv("./bin/ls", buf);
+        }
     } else {
         // parent will wait until child ends
         waitpid(pid, NULL, 0);
