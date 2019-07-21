@@ -1,10 +1,15 @@
 # has to be util/helper and bin/ls otherwise it will compile these two target everytime `make` gets called
-all: mcsh util/helper bin/ls 
+
+bin_dir = bin
+all: mcsh util/helper $(bin_dir)/ls $(bin_dir)/pwd
 
 mcsh: main.c util/helper.c
 	gcc -o $@ $^ -I.
 
-bin/ls: ./cmd/ls/ls.c util/helper.c
+$(bin_dir)/ls: ./cmd/ls/ls.c util/helper.c
+	gcc -o $@ $^
+
+$(bin_dir)/pwd: ./cmd/pwd/pwd.c
 	gcc -o $@ $^
 
 util/helper: util/helper.c util/helper_test.c
@@ -14,6 +19,6 @@ util/helper: util/helper.c util/helper_test.c
 
 clean:
 	rm mcsh
-	rm ./bin/*
+	rm $(bin_dir)/*
 	rm ./util/helper
 

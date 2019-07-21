@@ -138,13 +138,15 @@ void process(struct cmdInfo *cmd) {
         return;
     } else if (pid == 0) {
         // child will do cmd specified in buf
+        // TODO: use checkAndExec function
         if (strcmp("ls", cmd->cmd[0]) == 0) {
             execv(stringConcat(working_dir, "/bin/ls"), cmd->cmd);
         } else if (strcmp("pwd", cmd->cmd[0]) == 0) {
-            execv("/bin/pwd", cmd->cmd);
+            execv(stringConcat(working_dir, "/bin/pwd"), cmd->cmd);
         }
     } else {
         // parent will wait until child ends
+        // TODO: retrieve child status
         waitpid(pid, NULL, 0);
     }
 }
