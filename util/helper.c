@@ -44,12 +44,13 @@ void sortString(void* base, size_t num) {
     qsort(base, num, sizeof(char *), stringComparator);
 }
 
-//int main() {
-//    char* input[] = {"aa", "orange", "blue", "a"};
-//    sortString(input, 4);
-//    int i;
-//    for (i = 0; i < 4; i++) {
-//        printf("%s\n", input[i]);
-//    }
-//}
+char* stringConcat(const char* str1, const char* str2) {
+    size_t len1 = strlen(str1); size_t len2 = strlen(str2); 
+    char* res = malloc((len1+len2+1)*sizeof(char));
+    memcpy(res, str1, len1);
+    memcpy(res+len1, str2, len2);
+    res[len1+len2] = '\0';
+    return res;
+}
+
 

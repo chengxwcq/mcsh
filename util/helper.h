@@ -12,4 +12,7 @@ bool startsWith(const char* pre, const char* str);
 
 void sortString(void* base, size_t num);
 
+// return str1 + str2
+char* stringConcat(const char* str1, const char* str2);
+
 #endif
