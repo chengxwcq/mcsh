@@ -12,16 +12,15 @@ struct cmdInfo {
     int length;
 };
 
-void greeting();
-void process(struct cmdInfo *cmd);
-struct cmdInfo * parse_cmd(char* buf);
+void greeting(); void process(struct cmdInfo *cmd);
+void parse_cmd(char* buf, struct cmdInfo *info);
 void free_cmd_info(struct cmdInfo* info);
 
 char* working_dir; /* current working dir, used to track the path of bin directory*/
 
-int main() {
-    size_t working_dir_size = 128;
-    working_dir = malloc(working_dir_size*sizeof(char));
+int main() { 
+    size_t working_dir_size = 128; 
+    working_dir = malloc(working_dir_size*sizeof(char)); 
     getcwd(working_dir, working_dir_size);
 
     greeting();
@@ -41,50 +40,51 @@ int main() {
         if (1 == read_len) {
             continue;
         }
-        //TODO: is there a better way to parse without changing buf?
-        struct cmdInfo *cmd = parse_cmd(buffer);
+        struct cmdInfo *cmd = malloc(sizeof(struct cmdInfo));
+        parse_cmd(buffer, cmd);
+    
         process(cmd);
         free_cmd_info(cmd);
         free(buffer);
     }
 }
 
-// TODO: use state machine
-struct cmdInfo *parse_cmd(char* buf) {
-    struct cmdInfo *info = malloc(sizeof(struct cmdInfo));
+void parse_cmd(char* buf, struct cmdInfo *info) {
     int size = 4;
-    int num_of_args = 0;
-    char* cmd = strip(buf);
-
     info->cmd = malloc(size * sizeof(char*));
-    
-    int i;
-    int pos_of_arg = 0; /* position of last argument */
-    bool in_space = false;
+    int num_of_args = 0;
+    int i = 0;
+    enum state{SKIP, MATCH};
+    enum state status = SKIP;
+
+    int word_start_pos = 0;
     for (i = 0; ; i++) {
-        if (num_of_args == size) {
-            size = size * 3 / 2;
-            info->cmd = realloc(info->cmd, size * sizeof(char *));
-        }
-        if (cmd[i] == ' ' || cmd[i] == '\n' || cmd[i] == '\t' || cmd[i] == '\0') {
-            if (in_space && cmd[i] != '\0') {
-                pos_of_arg++;
+        char tmp = buf[i];
+        if (status == SKIP) {
+            if (tmp == ' ' || tmp == '\n' || tmp == '\t') {
                 continue;
+            } else {
+                word_start_pos = i;
+                status = MATCH;
             }
-            char *tmp = malloc((i - pos_of_arg + 1) * sizeof(char));
-            memcpy(tmp, &cmd[pos_of_arg], i-pos_of_arg);
-            tmp[i - pos_of_arg] = '\0';
-            info->cmd[num_of_args++] = tmp;
-            pos_of_arg = i + 1;
-            in_space = true;
-            if (cmd[i] == '\0') {
-                break;
+        } else if (status == MATCH) {
+            if (tmp == ' ' || tmp == '\n' || tmp == '\t' || tmp == '\0') {
+                num_of_args++;
+                if (num_of_args > size) {
+                    size = size * 3 / 2;
+                    info->cmd = realloc(info->cmd, size * sizeof(char*));
+                }
+
+                char *word = malloc((i - word_start_pos + 1) * sizeof(char));
+                memcpy(word, &buf[word_start_pos], i-word_start_pos);
+                word[i - word_start_pos] = '\0';
+                info->cmd[num_of_args-1] = word;
+                status = SKIP;
             }
-        } else {
-            in_space = false;
         }
+        if (tmp == '\0')
+            break;
     }
-    info->length = num_of_args;
 
     if (num_of_args == size) {
         size += 1;
@@ -92,7 +92,7 @@ struct cmdInfo *parse_cmd(char* buf) {
     }
     // second argument of execv should be terminated by NULL pointer
     info->cmd[num_of_args] = NULL;
-    return info;
+    info->length = num_of_args;
 }
 
 void free_cmd_info(struct cmdInfo* info) {
@@ -109,13 +109,13 @@ void free_cmd_info(struct cmdInfo* info) {
 
 void greeting() {
     // print some greeting words
-    printf("########################\n");
-    printf("#                      #\n");
-    printf("#                      #\n");
-    printf("# welcome to mc shell! #\n");
-    printf("#                      #\n");
-    printf("#                      #\n");
-    printf("########################\n");
+    printf("############################################################\n");
+    printf("#                                                          #\n");
+    printf("#                                                          #\n");
+    printf("#                 welcome to mc shell!                     #\n");
+    printf("#                                                          #\n");
+    printf("#                                                          #\n");
+    printf("############################################################\n");
     printf("\n\n");
 }
 
@@ -125,7 +125,7 @@ void process(struct cmdInfo *cmd) {
         if (cmd->length >= 1) {
             int rtn = chdir(cmd->cmd[1]);
             if (rtn != 0) {
-                printf("error running cd, err msg %d", rtn);
+                printf("error running cd, err msg %d\n", rtn);
             }
         }
         return;
@@ -134,7 +134,7 @@ void process(struct cmdInfo *cmd) {
     pid_t pid = fork();
     // TODO: mask sigint and other related signal....
     if (pid < 0) {
-        fprintf(stderr, "error when fork()");
+        fprintf(stderr, "error when fork()\n");
         return;
     } else if (pid == 0) {
         // child will do cmd specified in buf

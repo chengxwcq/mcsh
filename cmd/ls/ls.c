@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
         if (strcmp(argv[1], "-l") == 0) {
             detailed = true;
         } else {
-            fprintf(stderr, "not implemented yet");
+            fprintf(stderr, "not implemented yet\n");
             return -1;
         }
     }
